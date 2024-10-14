@@ -1,0 +1,24 @@
+name: htf-dev
+
+services:
+  postgres:
+    extends:
+      file: common.yml
+      service: postgres
+    env_file:
+      - ../.dev.env
+      
+  backend:
+    extends:
+      file: common.yml
+      service: backend
+    env_file:
+    - ../.dev.env
+
+networks:
+  default:
+    driver: bridge
+
+volumes:
+  pgsql:
+    driver: local

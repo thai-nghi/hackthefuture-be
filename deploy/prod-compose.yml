@@ -1,0 +1,23 @@
+name: htf-prod
+
+services:
+  postgres:
+    extends:
+      file: common.yml
+      service: postgres
+    env_file:
+      - ../.env
+  backend:
+    extends:
+      file: common.yml
+      service: backend
+    env_file:
+    - ../.env
+
+networks:
+  default:
+    driver: bridge
+
+volumes:
+  pgsql:
+    driver: local

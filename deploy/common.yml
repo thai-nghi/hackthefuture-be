@@ -1,0 +1,36 @@
+services:
+  postgres:
+    container_name: postgres-htf
+    image: 'postgres:15'
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - '${DB_PORT}:5432'
+    volumes:
+      - '~/pgsql-htf:/var/lib/postgresql/data'
+    networks:
+      - default
+  
+  backend:
+    container_name: backend-htf
+    build:
+      context: ..
+      dockerfile: ./Dockerfile
+    restart: always
+    environment:
+      - POSTGRES_HOST=postgres
+    ports:
+      - "8000:8000"
+    links:
+      - postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - default
+
+
