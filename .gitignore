@@ -30,3 +30,7 @@ package-lock.json
 #venv
 .venv
 .venv/*
+
+# env files
+.dev.env
+.prod.env
