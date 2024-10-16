@@ -10,7 +10,7 @@ from sqlalchemy import select, insert
 
 
 async def user_exist_by_email(db_session: AsyncSession, email: str) -> bool:
-    user_tbl = db_tables.user
+    user_tbl = db_tables.users
 
     query = select(user_tbl.c.id).where(user_tbl.c.email == email)
 
@@ -22,7 +22,7 @@ async def user_exist_by_email(db_session: AsyncSession, email: str) -> bool:
 async def create_user_by_email(
     db_session: AsyncSession, user_data: schemas.UserRegister, hashed_password: str
 ) -> schemas.UserResponse:
-    user_tbl = db_tables.user
+    user_tbl = db_tables.users
 
     query = insert(user_tbl).values(
         full_name=user_data.full_name,
@@ -38,7 +38,7 @@ async def create_user_by_email(
 
 
 async def user_password_by_email(db_session: AsyncSession, email: str) -> str | None:
-    user_tbl = db_tables.user
+    user_tbl = db_tables.users
 
     query = select(user_tbl.c.password).where(user_tbl.c.email == email)
 
@@ -50,18 +50,30 @@ async def user_password_by_email(db_session: AsyncSession, email: str) -> str | 
 async def user_detail_by_email(
     db_session: AsyncSession, email: str
 ) -> schemas.UserResponse:
-    user_tbl = db_tables.user
+    user_tbl = db_tables.users
+    organization_members_tbl = db_tables.organization_members
+    organizations_tbl = db_tables.organizations
 
-    query = select(
-        user_tbl.c.id,
-        user_tbl.c.email,
-        user_tbl.c.full_name,
-        user_tbl.c.points,
-        user_tbl.c.total_points,
-        user_tbl.c.city,
-        user_tbl.c.country,
-        user_tbl.c.rank,
-    ).where(user_tbl.c.email == email)
+    query = (
+        select(
+            user_tbl.c.id,
+            user_tbl.c.email,
+            user_tbl.c.full_name,
+            user_tbl.c.points,
+            user_tbl.c.total_points,
+            user_tbl.c.city,
+            user_tbl.c.country,
+            user_tbl.c.rank,
+            organizations_tbl.c.organization_name,
+        )
+        .select_from(
+            user_tbl.join(organization_members_tbl.c.user_id == user_tbl.c.id).join(
+                organizations_tbl,
+                organizations_tbl.c.id == organization_members_tbl.c.organization_id,
+            )
+        )
+        .where(user_tbl.c.email == email)
+    )
 
     user = (await db_session.execute(query)).first()
 
@@ -74,8 +86,10 @@ async def user_detail_by_email(
 async def get_user_by_google_id(
     db_session: AsyncSession, google_id: str
 ) -> schemas.UserResponse | None:
-    user_tbl = db_tables.user
-    google_tbl = db_tables.user_google_id
+    user_tbl = db_tables.users
+    google_tbl = db_tables.users_google_id
+    organization_members_tbl = db_tables.organization_members
+    organizations_tbl = db_tables.organizations
 
     query = (
         select(
@@ -88,7 +102,10 @@ async def get_user_by_google_id(
             user_tbl.c.country,
             user_tbl.c.rank,
         )
-        .select_from(user_tbl.join(google_tbl, google_tbl.c.user_id == user_tbl.c.id))
+        .select_from(user_tbl.join(google_tbl, google_tbl.c.user_id == user_tbl.c.id).join(organization_members_tbl.c.user_id == user_tbl.c.id).join(
+                organizations_tbl,
+                organizations_tbl.c.id == organization_members_tbl.c.organization_id,
+            ))
         .where(google_tbl.c.google_id == google_id)
     )
 
@@ -98,7 +115,7 @@ async def get_user_by_google_id(
 
 
 async def user_by_id(db_session: AsyncSession, id: int) -> schemas.UserResponse:
-    user_tbl = db_tables.user
+    user_tbl = db_tables.users
 
     query = select(
         user_tbl.c.id,
@@ -123,8 +140,8 @@ async def create_user_by_google_id(
     db_session: AsyncSession,
     google_data: schemas.GoogleCredentalData,
 ) -> schemas.UserResponse:
-    user_tbl = db_tables.user
-    google_tbl = db_tables.user_google_id
+    user_tbl = db_tables.users
+    google_tbl = db_tables.users_google_id
 
     query = insert(user_tbl).values(
         full_name=f"{google_data.given_name} {google_data.family_name}",

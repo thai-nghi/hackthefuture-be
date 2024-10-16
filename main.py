@@ -4,7 +4,7 @@ from fastapi.responses import ORJSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.endpoints.auth import router as auth_router
-from src.endpoints.shop import router as shop_router
+from src.endpoints.organization import router as shop_router
 
 app = FastAPI(default_response_class=ORJSONResponse)
 

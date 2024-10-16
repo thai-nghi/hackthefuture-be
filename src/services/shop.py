@@ -20,8 +20,8 @@ async def all_items(db_session: AsyncSession) -> list[schemas.ShopItem]:
 
 async def buy_item(db_session: AsyncSession, user_id: int, item_id: int, price: int):
 
-    inventory_tbl = db_tables.user_inventory
-    user_tbl = db_tables.user
+    inventory_tbl = db_tables.users_inventory
+    user_tbl = db_tables.users
 
     query = pg_insert(inventory_tbl).values(
         user_id = user_id,

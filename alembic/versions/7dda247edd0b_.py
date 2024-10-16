@@ -177,6 +177,16 @@ def upgrade() -> None:
             "application_id", "document_id", name="application_document_pk"
         ),
     )
+    op.create_table(
+        "user_google_id",
+        sa.Column("google_id", sa.String(), nullable=False),
+        sa.Column("user_id", sa.Integer(), nullable=False),
+        sa.ForeignKeyConstraint(
+            ["user_id"],
+            ["user.id"],
+        ),
+        sa.PrimaryKeyConstraint("google_id"),
+    )
     # ### end Alembic commands ###
 
 
@@ -190,6 +200,7 @@ def downgrade() -> None:
     op.drop_table("documents")
     op.drop_table("users")
     op.drop_table("organizations")
+    op.drop_table("user_google_id")
     review_type_enum.drop(op.get_bind(), checkfirst=True)
     organization_role_enum.drop(op.get_bind(), checkfirst=True)
     application_status_enum.drop(op.get_bind(), checkfirst=True)

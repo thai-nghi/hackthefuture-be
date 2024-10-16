@@ -84,3 +84,33 @@ class TokenPair(BaseModel):
 
 class SuccessResponseScheme(BaseModel):
     msg: str
+
+
+class UserResponse(BaseModel):
+    id: int
+    email: str
+    first_name: str
+    last_name: str
+    age: int
+    avatar: str
+    organization: str | None
+
+class DocumentAttribute(BaseModel):
+    file_url: str
+    name: str
+    type: DocumentType
+
+class Document(DocumentAttribute):
+    id: int
+
+class OrganizationAttributes(BaseModel):
+    organization_name: str
+    contact_address: str
+    contact_phone: str
+
+class OrganizationIn(OrganizationAttributes):
+    documents: list[DocumentAttribute] | None
+
+class Organization(OrganizationAttributes):
+    id: int
+    

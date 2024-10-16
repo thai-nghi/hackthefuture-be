@@ -108,3 +108,10 @@ organization_rating = Table(
     Column("type", review_type_enum, nullable=False),
     Column("author", ForeignKey("users.id"), nullable=False),
 )
+
+user_google_id = Table(
+    "user_google_id",
+    metadata_obj,
+    Column("google_id", String, primary_key=True),
+    Column("user_id", ForeignKey("user.id"), nullable=False),
+)

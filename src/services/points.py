@@ -12,9 +12,9 @@ from src.services import user
 async def add_point_for_user(
     db_session: AsyncSession, point: int, user_id: int
 ) -> schemas.UserResponse:
-    point_table = db_tables.user_point_gain
+    point_table = db_tables.users_point_gain
 
-    user_table = db_tables.user
+    user_table = db_tables.users
 
     log_query = insert(point_table).values(
         user_id=user_id,
@@ -43,7 +43,7 @@ async def leaderboard_of_country(
     db_session: AsyncSession,
     country: str,
 ) -> list[schemas.LeaderboardEntry]:
-    user_tbl = db_tables.user
+    user_tbl = db_tables.users
 
     query = (
         select(
