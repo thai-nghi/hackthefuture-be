@@ -22,7 +22,7 @@ async def user_org(
     
 ) -> responses.OrganizationResponse:
 
-    data =  await organization.organization_by_user_data(
+    data = await organization.organization_by_user_data(
         db_session, current_user.id, current_user.organization
     )
 

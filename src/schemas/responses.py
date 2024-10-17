@@ -9,4 +9,7 @@ class BaseResponse(BaseModel):
 class OrganizationResponse(BaseResponse):
     data : schemas.Organization
 
-
+class LoginResponse(BaseResponse):
+    has_account: bool = True
+    user_detail: schemas.UserResponse | None
+    avatar: str

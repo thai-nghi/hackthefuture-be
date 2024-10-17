@@ -7,6 +7,7 @@ from sqlalchemy import (
     Enum,
     ForeignKey,
     PrimaryKeyConstraint,
+    text,
 )
 from sqlalchemy.dialects.postgresql import JSONB, TIMESTAMP, TEXT
 
@@ -14,10 +15,12 @@ metadata_obj = MetaData()
 from src import schemas
 
 # Enum definitions
-document_type_enum = Enum(schemas.DocumentType, name='document_type')
-application_status_enum = Enum(schemas.ApplicationStatus, name='application_status')
-organization_role_enum = Enum(schemas.OrganizationRole, name='organization_role')
-review_type_enum = Enum(schemas.ReviewType, name='review_type')
+document_type_enum = Enum(schemas.DocumentType, name="document_type")
+application_status_enum = Enum(schemas.ApplicationStatus, name="application_status")
+organization_role_enum = Enum(schemas.OrganizationRole, name="organization_role")
+review_type_enum = Enum(schemas.ReviewType, name="review_type")
+gender_enum = Enum(schemas.Gender, name="gender_enum")
+organization_type_enum = Enum(schemas.OrganizationType, name="organization_type")
 
 # Table Definitions
 
@@ -26,12 +29,18 @@ users = Table(
     metadata_obj,
     Column("id", Integer, primary_key=True),
     Column("email", String, nullable=False),
-    Column("password", String, nullable=False),
+    Column("password", String, nullable=True),
     Column("first_name", String, nullable=False),
     Column("last_name", String, nullable=False),
-    Column("created_at", TIMESTAMP, nullable=False),
+    Column(
+        "created_at",
+        TIMESTAMP(timezone=True),
+        server_default=text("current_timestamp"),
+        nullable=False,
+    ),
     Column("age", Integer, nullable=True),
     Column("avatar", String, nullable=True),
+    Column("gender", gender_enum, nullable=False),
 )
 
 events = Table(
@@ -45,7 +54,8 @@ events = Table(
     Column("phone_contact", String, nullable=False),
     Column("pictures", JSONB, nullable=True),
     Column("details", JSONB, nullable=True),
-    Column("start_date", TIMESTAMP, nullable=False),
+    Column("start_date", TIMESTAMP(timezone=True),
+        server_default=text("current_timestamp"), nullable=False),
     Column("duration", Integer, nullable=False),
 )
 
@@ -57,8 +67,10 @@ event_applications = Table(
     Column("applicant_id", ForeignKey("organizations.id"), nullable=False),
     Column("application_data", JSONB, nullable=True),
     Column("status", application_status_enum, nullable=False),
-    Column("created_at", TIMESTAMP, nullable=False),
-    Column("updated_at", TIMESTAMP, nullable=True),
+    Column("created_at", TIMESTAMP(timezone=True),
+        server_default=text("current_timestamp"), nullable=False),
+    Column("updated_at", TIMESTAMP(timezone=True),
+        server_default=text("current_timestamp"), nullable=True),
     Column("updated_by", Integer, nullable=True),
 )
 
@@ -69,7 +81,7 @@ documents = Table(
     Column("uploader_id", ForeignKey("organizations.id"), nullable=False),
     Column("file_url", String, nullable=False),
     Column("name", String, nullable=False),
-    Column("type",document_type_enum, nullable=False),
+    Column("type", document_type_enum, nullable=False),
 )
 
 application_document = Table(
@@ -77,7 +89,9 @@ application_document = Table(
     metadata_obj,
     Column("application_id", ForeignKey("event_applications.id"), nullable=False),
     Column("document_id", ForeignKey("documents.id"), nullable=False),
-    PrimaryKeyConstraint("application_id", "document_id", name="application_document_pk"),
+    PrimaryKeyConstraint(
+        "application_id", "document_id", name="application_document_pk"
+    ),
 )
 
 organizations = Table(
@@ -87,6 +101,7 @@ organizations = Table(
     Column("organization_name", String, nullable=False),
     Column("contact_address", String, nullable=False),
     Column("contact_phone", String, nullable=False),
+    Column("organization_type", organization_type_enum, default=text("VENDOR"), nullable=False)
 )
 
 organization_members = Table(
@@ -113,5 +128,5 @@ user_google_id = Table(
     "user_google_id",
     metadata_obj,
     Column("google_id", String, primary_key=True),
-    Column("user_id", ForeignKey("user.id"), nullable=False),
+    Column("user_id", ForeignKey("users.id"), nullable=False),
 )

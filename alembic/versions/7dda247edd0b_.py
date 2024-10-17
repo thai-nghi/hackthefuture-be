@@ -18,16 +18,16 @@ depends_on = None
 
 
 document_type_enum = postgresql.ENUM(
-    "APPLICATION", "ORGANIZATION", name="document_type"
+    "APPLICATION", "ORGANIZATION", name="document_type", create_type=False,
 )
 
 application_status_enum = postgresql.ENUM(
-    "IN_PROGRESS", "APPROVE", "REJECTED", name="application_status"
+    "IN_PROGRESS", "APPROVE", "REJECTED", name="application_status", create_type=False,
 )
 
-organization_role_enum = postgresql.ENUM("ADMIN", "STAFF", name="organization_role")
+organization_role_enum = postgresql.ENUM("ADMIN", "STAFF", name="organization_role", create_type=False,)
 
-review_type_enum = postgresql.ENUM("EVENT", "VENDOR", name="review_type")
+review_type_enum = postgresql.ENUM("EVENT", "VENDOR", name="review_type", create_type=False,)
 
 
 def upgrade() -> None:
@@ -52,7 +52,7 @@ def upgrade() -> None:
         sa.Column("password", sa.String(), nullable=False),
         sa.Column("first_name", sa.String(), nullable=False),
         sa.Column("last_name", sa.String(), nullable=False),
-        sa.Column("created_at", postgresql.TIMESTAMP(), nullable=False),
+        sa.Column("created_at", postgresql.TIMESTAMP(timezone=True), server_default=sa.text("current_timestamp"), nullable=False),
         sa.Column("age", sa.Integer(), nullable=True),
         sa.Column("avatar", sa.String(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
@@ -84,7 +84,7 @@ def upgrade() -> None:
         sa.Column("phone_contact", sa.String(), nullable=False),
         sa.Column("pictures", postgresql.JSONB(astext_type=sa.Text()), nullable=True),
         sa.Column("details", postgresql.JSONB(astext_type=sa.Text()), nullable=True),
-        sa.Column("start_date", postgresql.TIMESTAMP(), nullable=False),
+        sa.Column("start_date", postgresql.TIMESTAMP(timezone=True), server_default=sa.text("current_timestamp"), nullable=False),
         sa.Column("duration", sa.Integer(), nullable=False),
         sa.ForeignKeyConstraint(
             ["organizer_id"],
@@ -148,8 +148,8 @@ def upgrade() -> None:
             application_status_enum,
             nullable=False,
         ),
-        sa.Column("created_at", postgresql.TIMESTAMP(), nullable=False),
-        sa.Column("updated_at", postgresql.TIMESTAMP(), nullable=True),
+        sa.Column("created_at", postgresql.TIMESTAMP(timezone=True), server_default=sa.text("current_timestamp"), nullable=False),
+        sa.Column("updated_at", postgresql.TIMESTAMP(timezone=True), server_default=sa.text("current_timestamp"), nullable=True),
         sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["applicant_id"],
@@ -183,7 +183,7 @@ def upgrade() -> None:
         sa.Column("user_id", sa.Integer(), nullable=False),
         sa.ForeignKeyConstraint(
             ["user_id"],
-            ["user.id"],
+            ["users.id"],
         ),
         sa.PrimaryKeyConstraint("google_id"),
     )

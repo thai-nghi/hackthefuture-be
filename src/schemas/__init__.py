@@ -20,12 +20,22 @@ class ReviewType(enum.Enum):
     EVENT = "EVENT"
     VENDOR = "VENDOR"
 
+class Gender(enum.Enum):
+    MALE = "MALE"
+    FEMALE = "FEMALE"
+    OTHER = "OTHER"
+    UNDISCLOSED = "UNDISCLOSED"
+
+class OrganizationType(enum.Enum):
+    EVENT_ORGANIZER = "ORGANIZER"
+    VENDOR = "VENDOR"
 
 class UserBase(BaseModel):
     email: EmailStr
-    full_name: str
-    city: str
-    country: str
+    first_name: str
+    last_name: str
+    age: int
+    gender: Gender
 
 
 class UserCreate(UserBase):
@@ -53,6 +63,8 @@ class UserRegister(UserBase):
 
         return v
 
+class GoogleRegister(UserBase):
+    google_token: str
 
 class UserLogin(BaseModel):
     email: EmailStr | None

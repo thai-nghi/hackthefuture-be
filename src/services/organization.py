@@ -35,4 +35,19 @@ async def organization_by_id(
     if result is None:
         raise exceptions.NotFoundException
     
-    return schemas.ShopItem(**result._mapping)
+    return schemas.Organization(**result._mapping)
+
+async def organization_by_user_data(
+        db_session: AsyncSession, user_id: int, organization_name: str
+    )-> schemas.Organization:
+    org_tbl = db_tables.organizations
+    organization_members_tbl = db_tables.organization_members
+
+    query = select(org_tbl).select_from(org_tbl.join(organization_members_tbl, organization_members_tbl.c.user_id == user_id))
+    
+    result = (await db_session.execute(query)).first()
+
+    if result is None:
+        raise exceptions.NotFoundException
+    
+    return schemas.Organization(**result._mapping)
