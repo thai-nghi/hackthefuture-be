@@ -8,30 +8,33 @@ from src.dependencies.user import get_current_user
 
 from src.exceptions import BadRequestException
 from src import schemas
+from src.schemas import responses
 
 from src.services import organization, document
 
 router = APIRouter(prefix="/org", dependencies=[Depends(get_current_user)], tags=["Organizations"])
 
 
-@router.get("/", response_model=schemas.Organization)
+@router.get("/", response_model=responses.OrganizationResponse)
 async def user_org(
     current_user: UserDependency,
     db_session: DatabaseDependency,
     
-) -> schemas.Organization:
+) -> responses.OrganizationResponse:
 
-    return await organization.organization_by_user_data(
+    data =  await organization.organization_by_user_data(
         db_session, current_user.id, current_user.organization
     )
 
+    return responses.OrganizationResponse(data=data)
 
-@router.post("/", response_model=schemas.Organization)
+
+@router.post("/", response_model=responses.OrganizationResponse)
 async def create_org(
     current_user: UserDependency,
     db_session: DatabaseDependency,
     data: Annotated[schemas.OrganizationIn, Body],
-) -> schemas.Organization :
+) -> responses.OrganizationResponse :
     if current_user.organization is not None:
         raise BadRequestException("User already has an organization")
     
@@ -41,4 +44,4 @@ async def create_org(
     await document.add_documents(db_session, new_organization.id, data.documents)
     await db_session.commit()
 
-    return new_organization
+    return responses.OrganizationResponse(data=new_organization)
