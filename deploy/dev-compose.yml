@@ -15,10 +15,17 @@ services:
     env_file:
     - ../.dev.env
 
+  minio:
+    extends:
+      file: common.yml
+      service: minio
+
 networks:
   default:
     driver: bridge
 
 volumes:
   pgsql:
+    driver: local
+  minio_data:
     driver: local

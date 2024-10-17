@@ -34,7 +34,20 @@ When you make any change to the `db_tables.py` you should create a migration
 alembic -x db_url="postgresql+asyncpg://<db_user>:<db_password>@127.0.0.1/<db_name>" revision --autogenerate
 ```
 
+# Starting minio for development
+
+Minio is used for object storage (similar to S3) we're using a free self-hosted version cuz we're broke.
+
+To start it run
+
+```bash
+docker compose --env-file .dev.env -f ./deploy/dev-compose.yml up minio -d
+```
+
 # Starting server for development
 ```bash
 uvicorn main:app --host <host_ip> --port 8000 --reload
 ```
+
+
+
