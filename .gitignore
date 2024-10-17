@@ -34,3 +34,6 @@ package-lock.json
 # env files
 .dev.env
 .prod.env
+
+#python cache
+*.pyc
