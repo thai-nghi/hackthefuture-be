@@ -50,4 +50,31 @@ uvicorn main:app --host <host_ip> --port 8000 --reload
 ```
 
 
+# Resetting DB
+In case you mess up the data, you can jump into the database and wipe it clean.
+
+First get a shell to the database:
+```bash
+docker exec -it <container_id_of_db> bash
+```
+
+Then use psql to get an interactive db:
+```bash
+ psql -U <username> -d <db_name>
+```
+
+
+Then paste this block to the shell, enter
+```sql
+DO $$ DECLARE
+    r RECORD;
+BEGIN
+    FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = current_schema()) LOOP
+        EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(r.tablename) || ' CASCADE';
+    END LOOP;
+END $$;
+
+```
+
+
 
