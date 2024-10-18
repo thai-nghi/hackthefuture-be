@@ -34,6 +34,8 @@ def _create_token(payload: dict, expire: datetime) -> JwtTokenSchema:
     )
 
 def decode_token(token: str) -> dict | None:
+    if token is None:
+        return none
     try:
         return jwt.decode(
             token, config.settings.SECRET_KEY, algorithms=[config.settings.ALGORITHM]
