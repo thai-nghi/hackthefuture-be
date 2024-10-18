@@ -1,6 +1,6 @@
 from typing import Any
 from datetime import datetime
-from pydantic import BaseModel, validator, EmailStr, root_validator
+from pydantic import BaseModel, PositiveInt, validator, EmailStr, root_validator
 import enum
 
 class DocumentType(enum.Enum):
@@ -106,6 +106,7 @@ class UserResponse(BaseModel):
     age: int
     avatar: str
     organization: str | None
+    organization_id: int | None
 
 class DocumentAttribute(BaseModel):
     file_url: str
@@ -119,6 +120,7 @@ class OrganizationAttributes(BaseModel):
     organization_name: str
     contact_address: str
     contact_phone: str
+    organization_type: OrganizationType = OrganizationType.VENDOR
 
 class OrganizationIn(OrganizationAttributes):
     documents: list[DocumentAttribute] | None
@@ -126,3 +128,54 @@ class OrganizationIn(OrganizationAttributes):
 class Organization(OrganizationAttributes):
     id: int
     
+class Membership(BaseModel):
+    user_id: int
+    organization_id: int
+    role: OrganizationRole
+
+class PaginationRequest(BaseModel):
+    currentPage: PositiveInt
+    pageSize: PositiveInt = 6
+    @validator("pageSize")
+    def verify_page_size(cls, v, values, **kwargs):
+        page_size = values.get("pageSize")
+        if page_size > 100:
+            raise ValueError("Page size to large")
+        return v
+
+class PaginationResponse(PaginationRequest):
+    total: PositiveInt
+
+class FairListQuery(BaseModel):
+    location: str 
+    categories: list[str] | str
+    page: PaginationRequest
+
+class FairListRequest(BaseModel):
+    data: FairListQuery
+
+class Tag(BaseModel):
+    name: str
+    color: str 
+
+class ImageSchema(BaseModel):
+    url: str
+
+class EventDetailSchema(BaseModel):
+    config: str
+
+class FairAttribute(BaseModel):
+    id: str
+    event_name: str
+    location: str
+    description: str
+    # tags: list[Tag] | None    
+    phone_contact: str
+    pictures: ImageSchema
+    details: EventDetailSchema
+    start_date: datetime | None
+    duration: int
+
+class PaginationFairList(BaseModel):
+    data: list[FairAttribute] = []
+    # page: PaginationResponse

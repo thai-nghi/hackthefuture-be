@@ -5,7 +5,6 @@ from src import schemas
 class BaseResponse(BaseModel):
     success: bool = True
 
-
 class OrganizationResponse(BaseResponse):
     data : schemas.Organization
 
@@ -13,3 +12,12 @@ class LoginResponse(BaseResponse):
     has_account: bool = True
     user_detail: schemas.UserResponse | None
     avatar: str
+
+class MembershipResponse(BaseResponse):
+    data: schemas.Membership
+
+class FairListResponse(BaseResponse):
+    data: schemas.PaginationFairList
+
+class FairAttributeResponse(BaseResponse):
+    data: schemas.FairAttribute
