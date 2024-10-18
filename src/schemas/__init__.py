@@ -1,5 +1,5 @@
 from typing import Any
-from datetime import datetime
+from datetime import datetime, date
 from pydantic import BaseModel, validator, EmailStr, root_validator
 import enum
 
@@ -34,7 +34,7 @@ class UserBase(BaseModel):
     email: EmailStr
     first_name: str
     last_name: str
-    age: int
+    birth_date: datetime
     gender: Gender
 
 
@@ -73,13 +73,13 @@ class UserLogin(BaseModel):
     
     @root_validator
     def ensure_credentals(cls, values):
-        print(values)
         if "username" in values:
             values["email"] = values["username"]
         if "email" not in values and "google_token" not in values:
             raise ValueError("Either email or google_token is needed")
         if "email" in values and "password" not in values:
             raise ValueError("Password is required for login with email")
+        
 
         return values
 
@@ -98,13 +98,8 @@ class SuccessResponseScheme(BaseModel):
     msg: str
 
 
-class UserResponse(BaseModel):
+class UserResponse(UserBase):
     id: int
-    email: str
-    first_name: str
-    last_name: str
-    age: int
-    avatar: str
     organization: str | None
 
 class DocumentAttribute(BaseModel):
@@ -125,4 +120,12 @@ class OrganizationIn(OrganizationAttributes):
 
 class Organization(OrganizationAttributes):
     id: int
+
+class Country(BaseModel):
+    label: str
+    value: int
+
+class City(BaseModel):
+    label: str
+    value: int
     

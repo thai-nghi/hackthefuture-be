@@ -28,7 +28,7 @@ users = Table(
     "users",
     metadata_obj,
     Column("id", Integer, primary_key=True),
-    Column("email", String, nullable=False),
+    Column("email", String, nullable=False, index=True),
     Column("password", String, nullable=True),
     Column("first_name", String, nullable=False),
     Column("last_name", String, nullable=False),
@@ -38,7 +38,7 @@ users = Table(
         server_default=text("current_timestamp"),
         nullable=False,
     ),
-    Column("age", Integer, nullable=True),
+    Column("birth_date", TIMESTAMP(timezone=True), nullable=True),
     Column("avatar", String, nullable=True),
     Column("gender", gender_enum, nullable=False),
 )
@@ -47,7 +47,7 @@ events = Table(
     "events",
     metadata_obj,
     Column("id", Integer, primary_key=True),
-    Column("organizer_id", ForeignKey("organizations.id"), nullable=False),
+    Column("organizer_id", ForeignKey("organizations.id"), nullable=False, index=True),
     Column("event_name", String, nullable=False),
     Column("location", String, nullable=False),
     Column("description", TEXT, nullable=False),
@@ -63,8 +63,8 @@ event_applications = Table(
     "event_applications",
     metadata_obj,
     Column("id", Integer, primary_key=True),
-    Column("event_id", ForeignKey("events.id"), nullable=False),
-    Column("applicant_id", ForeignKey("organizations.id"), nullable=False),
+    Column("event_id", ForeignKey("events.id"), nullable=False, index=True),
+    Column("applicant_id", ForeignKey("organizations.id"), nullable=False, index=True),
     Column("application_data", JSONB, nullable=True),
     Column("status", application_status_enum, nullable=False),
     Column("created_at", TIMESTAMP(timezone=True),
@@ -78,7 +78,7 @@ documents = Table(
     "documents",
     metadata_obj,
     Column("id", Integer, primary_key=True),
-    Column("uploader_id", ForeignKey("organizations.id"), nullable=False),
+    Column("uploader_id", ForeignKey("organizations.id"), nullable=False, index=True),
     Column("file_url", String, nullable=False),
     Column("name", String, nullable=False),
     Column("type", document_type_enum, nullable=False),
@@ -117,7 +117,7 @@ organization_rating = Table(
     "organization_rating",
     metadata_obj,
     Column("id", Integer, primary_key=True),
-    Column("target_org", ForeignKey("organizations.id"), nullable=False),
+    Column("target_org", ForeignKey("organizations.id"), nullable=False, index=True),
     Column("review", TEXT, nullable=False),
     Column("rating", Integer, nullable=False),
     Column("type", review_type_enum, nullable=False),
@@ -129,4 +129,20 @@ user_google_id = Table(
     metadata_obj,
     Column("google_id", String, primary_key=True),
     Column("user_id", ForeignKey("users.id"), nullable=False),
+)
+
+
+countries = Table(
+    "countries",
+    metadata_obj,
+    Column("id", Integer, primary_key=True),
+    Column("label", String, nullable=False),
+)
+
+cities = Table(
+    "cities",
+    metadata_obj,
+    Column("id", Integer, primary_key=True),
+    Column("label", String, nullable=False),
+    Column("country", ForeignKey("countries.id"),nullable=False, index=True)
 )

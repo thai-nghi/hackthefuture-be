@@ -28,20 +28,24 @@ async def get_current_user(
     response: Response
 ) -> schemas.UserResponse:
     
-    try:
-        payload = request.app.decoded_token
-    except AttributeError:
-        payload = None
+    # try:
+    #     payload = request.app.decoded_token
+    # except AttributeError:
+    #     payload = None
+
+    # if payload is None:
+    #     refresh_token = request.cookies.get("refresh", "")
+
+    #     payload = decode_token(refresh_token)
+
+    #     if payload is None:
+    #         raise AuthTokenExpiredException
+    #     else:
+    #         refresh_token_state(response, refresh_token)
+
+    payload = decode_token(token)
 
     if payload is None:
-        refresh_token = request.cookies.get("refresh", "")
-
-        payload = decode_token(refresh_token)
-
-        if payload is None:
-            raise AuthTokenExpiredException
-        else:
-            refresh_token_state(response, refresh_token)
-
+        raise AuthTokenExpiredException
 
     return await user_service.user_by_id(db_session, int(payload[SUB]))
