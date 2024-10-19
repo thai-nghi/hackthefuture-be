@@ -146,13 +146,13 @@ class PaginationRequest(BaseModel):
 class PaginationResponse(PaginationRequest):
     total: PositiveInt
 
-class FairListQuery(BaseModel):
+class EventListQuery(BaseModel):
     location: str 
     categories: list[str] | str
     page: PaginationRequest
 
-class FairListRequest(BaseModel):
-    data: FairListQuery
+class EventListRequest(BaseModel):
+    data: EventListQuery
 
 class Tag(BaseModel):
     name: str
@@ -164,18 +164,23 @@ class ImageSchema(BaseModel):
 class EventDetailSchema(BaseModel):
     config: str
 
-class FairAttribute(BaseModel):
-    id: str
-    event_name: str
-    location: str
-    description: str
+class EventAttributeIn(BaseModel):
+    event_name: str 
+    location: str 
+    description: str 
     # tags: list[Tag] | None    
-    phone_contact: str
-    pictures: ImageSchema
-    details: EventDetailSchema
-    start_date: datetime | None
-    duration: int
+    phone_contact: str 
+    pictures: ImageSchema 
+    details: EventDetailSchema 
+    start_date: datetime 
+    duration: int 
 
-class PaginationFairList(BaseModel):
-    data: list[FairAttribute] = []
+class EventAttributeMid(EventAttributeIn):
+    organizer_id: int
+
+class EventAttribute(EventAttributeMid):
+    id: int
+
+class PaginationEventList(BaseModel):
+    data: list[EventAttribute] = []
     # page: PaginationResponse

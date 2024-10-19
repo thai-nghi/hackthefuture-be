@@ -56,6 +56,7 @@ async def add_employee(
     db_session: DatabaseDependency,
     data: Annotated[schemas.Membership, Body],
 ) -> responses.OrganizationResponse :
+    
     membership_info = await organization.get_membership_by_user_id(current_user.id)
 
     if membership_info.organization_id != data.organization_id:

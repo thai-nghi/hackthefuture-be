@@ -16,8 +16,8 @@ class LoginResponse(BaseResponse):
 class MembershipResponse(BaseResponse):
     data: schemas.Membership
 
-class FairListResponse(BaseResponse):
-    data: schemas.PaginationFairList
+class EventListResponse(BaseResponse):
+    data: list[schemas.EventAttribute]
 
-class FairAttributeResponse(BaseResponse):
-    data: schemas.FairAttribute
+class EventAttributeResponse(BaseResponse):
+    data: schemas.EventAttribute
