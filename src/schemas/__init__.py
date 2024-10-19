@@ -163,8 +163,8 @@ class ImageSchema(BaseModel):
     url: str
 
 class EventImage(BaseModel):
-    event: ImageSchema
-    banner: ImageSchema
+    event: list[ImageSchema]
+    banner: list[ImageSchema]
     map: ImageSchema
 
 class EventDetailSchema(BaseModel):
