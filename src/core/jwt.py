@@ -33,7 +33,9 @@ def _create_token(payload: dict, expire: datetime) -> JwtTokenSchema:
         payload=payload,
     )
 
-def decode_token(token: str) -> dict | None:
+def decode_token(token: str | None) -> dict | None:
+    if token is None:
+        return None
     try:
         return jwt.decode(
             token, config.settings.SECRET_KEY, algorithms=[config.settings.ALGORITHM]
@@ -100,6 +102,8 @@ def create_and_inject_token(response: Response, user: UserResponse):
         ("refresh", config.settings.REFRESH_TOKEN_EXPIRES_MINUTES),
     ]
 
+    result = dict()
+
     for token_name, refresh_minutes in token_details:
         expire = create_time + timedelta(minutes=refresh_minutes)
         token = _create_token(payload, expire)
@@ -108,4 +112,10 @@ def create_and_inject_token(response: Response, user: UserResponse):
             value=token.token,
             expires=int(expire.timestamp()),
             httponly=True,
+            samesite='none'
         )
+        result[token_name] = token.token
+
+    return result
+
+    

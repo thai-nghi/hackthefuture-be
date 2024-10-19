@@ -1,6 +1,6 @@
 from typing import Any
-from datetime import datetime
 from pydantic import BaseModel, PositiveInt, validator, EmailStr, root_validator
+from datetime import datetime
 import enum
 
 class DocumentType(enum.Enum):
@@ -34,7 +34,7 @@ class UserBase(BaseModel):
     email: EmailStr
     first_name: str
     last_name: str
-    age: int
+    birth_date: datetime
     gender: Gender
 
 
@@ -79,6 +79,7 @@ class UserLogin(BaseModel):
             raise ValueError("Either email or google_token is needed")
         if "email" in values and "password" not in values:
             raise ValueError("Password is required for login with email")
+        
 
         return values
 
@@ -97,13 +98,8 @@ class SuccessResponseScheme(BaseModel):
     msg: str
 
 
-class UserResponse(BaseModel):
+class UserResponse(UserBase):
     id: int
-    email: str
-    first_name: str
-    last_name: str
-    age: int
-    avatar: str
     organization: str | None
     organization_id: int | None
 
@@ -126,6 +122,14 @@ class OrganizationIn(OrganizationAttributes):
 
 class Organization(OrganizationAttributes):
     id: int
+
+class Country(BaseModel):
+    label: str
+    value: int
+
+class City(BaseModel):
+    label: str
+    value: int
     
 class Membership(BaseModel):
     user_id: int

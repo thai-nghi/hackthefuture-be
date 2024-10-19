@@ -23,6 +23,7 @@ async def create_user_by_email(
     db_session: AsyncSession,
     user_data: schemas.UserRegister,
     hashed_password: str | None,
+    avatar: str | None,
 ) -> schemas.UserResponse:
     user_tbl = db_tables.users
 
@@ -31,9 +32,9 @@ async def create_user_by_email(
         last_name=user_data.last_name,
         email=user_data.email,
         password=hashed_password,
-        age=user_data.age,
+        birth_date=user_data.birth_date,
         gender=user_data.gender,
-        avatar="",
+        avatar=avatar if avatar is not None else "",
     )
 
     (await db_session.execute(query))
@@ -71,7 +72,7 @@ async def user_detail_by_email(
             user_tbl.c.email,
             user_tbl.c.first_name,
             user_tbl.c.last_name,
-            user_tbl.c.age,
+            user_tbl.c.birth_date,
             user_tbl.c.gender,
             user_tbl.c.avatar,
             organizations_tbl.c.organization_name,
@@ -93,7 +94,7 @@ async def get_user_by_google_id(
     db_session: AsyncSession, google_id: str
 ) -> schemas.UserResponse | None:
     user_tbl = db_tables.users
-    google_tbl = db_tables.users_google_id
+    google_tbl = db_tables.user_google_id
     organization_members_tbl = db_tables.organization_members
     organizations_tbl = db_tables.organizations
 
@@ -103,7 +104,7 @@ async def get_user_by_google_id(
             user_tbl.c.email,
             user_tbl.c.first_name,
             user_tbl.c.last_name,
-            user_tbl.c.age,
+            user_tbl.c.birth_date,
             user_tbl.c.gender,
             user_tbl.c.avatar,
             organizations_tbl.c.organization_name,
@@ -171,17 +172,21 @@ async def user_by_id(db_session: AsyncSession, id: int) -> schemas.UserResponse:
 async def create_user_by_google_id(
     db_session: AsyncSession,
     google_data: schemas.GoogleCredentalData,
+    user_data: schemas.UserBase,
 ) -> schemas.UserResponse:
     user_tbl = db_tables.users
-    google_tbl = db_tables.users_google_id
+    google_tbl = db_tables.user_google_id
 
     query = insert(user_tbl).values(
-        full_name=f"{google_data.given_name} {google_data.family_name}",
-        email=google_data.email,
-        password=None,
-        city="Lahti",
-        country="Finland",
+        first_name=user_data.first_name,
+        last_name=user_data.last_name,
+        email=user_data.email,
+        birth_date=user_data.birth_date,
+        gender=user_data.gender,
+        avatar=google_data.picture,
     )
+
+    (await db_session.execute(query))
 
     inserted_id = (await db_session.execute(query)).inserted_primary_key[0]
 

@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import APIRouter, HTTPException, Depends, Response
+from fastapi import APIRouter, HTTPException, Depends, Response, Body
 
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -45,10 +45,22 @@ async def register(
 
     return {}
 
+async def fetch_google_data(token: str) -> schemas.GoogleCredentalData:
+    async with httpx.AsyncClient() as http_client:
+        try:
+            user_data = await http_client.get(
+                f"https://www.googleapis.com/oauth2/v3/userinfo?access_token={token}"
+            )
 
-@router.post("register_google", response_model=responses.LoginResponse)
+            return schemas.GoogleCredentalData(**user_data.json())
+        except Exception:
+            # Invalid token
+            raise BadRequestException(detail="Incorrect google token")
+
+
+@router.post("/register_google", response_model=responses.LoginResponse)
 async def register_google_user(
-    data: schemas.GoogleRegister,
+    data: Annotated[schemas.GoogleRegister, Body(embed=True)],
     response: Response,
     db_session: DatabaseDependency,
 ) -> responses.LoginResponse:
@@ -56,16 +68,16 @@ async def register_google_user(
 
     if user_exist:
         raise HTTPException(status_code=400, detail="Email has already registered")
+    
+    google_data = await fetch_google_data(data.google_token)
 
-    created_user = await user_service.create_user_by_email(
-        db_session, data, None
-    )
+    created_user = await user_service.create_user_by_google_id(db_session, google_data, data)
 
-    create_and_inject_token(response, created_user)
+    tokens = create_and_inject_token(response, created_user)
 
     await db_session.commit()
 
-    return responses.LoginResponse(user_detail=created_user, avatar="")
+    return responses.LoginResponse(data=created_user, token=tokens["access"])
 
 
 
@@ -73,33 +85,24 @@ async def handle_google_login(google_token: str, db_session: AsyncSession) -> sc
     """
     Handle login with google
     """
-    async with httpx.AsyncClient() as http_client:
-        try:
-            user_data = await http_client.get(
-                f"https://www.googleapis.com/oauth2/v3/userinfo?access_token={google_token}"
-            )
-
-            parsed_info = schemas.GoogleCredentalData(**user_data.json())
-        except Exception:
-            # Invalid token
-            raise BadRequestException(detail="Incorrect google token")
-
-    user = await user_service.get_user_by_google_id(db_session, parsed_info.sub)
+    google_data = await fetch_google_data(google_token)
+    user = await user_service.get_user_by_google_id(db_session, google_data.sub)
 
     return user
 
 @router.post("/login", response_model=responses.LoginResponse)
 async def login(
-    data: schemas.UserLogin,
+    data: Annotated[schemas.UserLogin, Body(embed=True)],
     response: Response,
     db_session: DatabaseDependency,
 ):
+    print(data)
     if data.google_token is not None:
         # login with google
         user = await handle_google_login(data.google_token, db_session)
 
         if user is None:
-            return responses.LoginResponse(has_account=False, token="", user_detail=None, avatar="")
+            return responses.LoginResponse(has_account=False)
         
     if data.email is not None:
         # login with email
@@ -110,11 +113,11 @@ async def login(
 
         user = await user_service.user_detail_by_email(db_session, data.email)
 
-    create_and_inject_token(response, user)
+    tokens = create_and_inject_token(response, user)
 
     await db_session.commit()
 
-    return responses.LoginResponse(user_detail=user, avatar="")
+    return responses.LoginResponse(data=user, token=tokens["access"])
 
 
 @router.post("/token")
