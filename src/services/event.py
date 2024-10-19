@@ -34,14 +34,22 @@ async def get_event_by_id(
 ) -> schemas.EventAttribute:
     
     event_tbl = db_tables.events
+    org_tbl = db_tables.organizations
     
-    query = select(event_tbl).where(event_tbl.c.id == id)
-    
+    query = select(
+                event_tbl, 
+                org_tbl.c.organization_name
+            ).join(
+                org_tbl, 
+                org_tbl.c.id == event_tbl.c.organizer_id,
+                isouter=True
+            ).where(event_tbl.c.id == id)
+
     result = (await db_session.execute(query)).first()
 
     if result is None:
         raise exceptions.NotFoundException
-    
+
     return schemas.EventAttribute(**result._mapping)
 
 async def create_new_event(

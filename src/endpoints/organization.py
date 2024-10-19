@@ -31,7 +31,7 @@ async def user_org(
 async def create_org(
     current_user: UserDependency,
     db_session: DatabaseDependency,
-    data: Annotated[schemas.OrganizationIn, Body],
+    data: Annotated[schemas.OrganizationIn, Body(embed=True)],
 ) -> responses.OrganizationResponse :
     if current_user.organization_id is not None:
         raise BadRequestException("User already has an organization")
@@ -54,7 +54,7 @@ async def create_org(
 async def add_employee(
     current_user: UserDependency,
     db_session: DatabaseDependency,
-    data: Annotated[schemas.Membership, Body],
+    data: Annotated[schemas.Membership, Body(embed=True)],
 ) -> responses.OrganizationResponse :
     
     membership_info = await organization.get_membership_by_user_id(current_user.id)

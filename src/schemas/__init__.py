@@ -1,5 +1,5 @@
 from typing import Any
-from pydantic import BaseModel, PositiveInt, validator, EmailStr, root_validator
+from pydantic import BaseModel, PositiveInt, validator, EmailStr, root_validator, Field
 from datetime import datetime
 import enum
 
@@ -29,6 +29,10 @@ class Gender(enum.Enum):
 class OrganizationType(enum.Enum):
     EVENT_ORGANIZER = "ORGANIZER"
     VENDOR = "VENDOR"
+
+class EventStatus(enum.Enum):
+    HIDDEN = "HIDDEN"
+    PUBLIC = "PUBLIC"
 
 class UserBase(BaseModel):
     email: EmailStr
@@ -100,7 +104,6 @@ class SuccessResponseScheme(BaseModel):
 
 class UserResponse(UserBase):
     id: int
-    organization: str | None
     organization_id: int | None
 
 class DocumentAttribute(BaseModel):
@@ -137,21 +140,9 @@ class Membership(BaseModel):
     role: OrganizationRole
 
 class PaginationIn(BaseModel):
-    currentPage: int
-    pageSize: int = 6
-    @validator("currentPage")
-    def verify_current_page(cls, v, values, **kwargs):
-        if v < 0:
-            raise ValueError("Current page cannot be negative")
-        return v
+    currentPage: int = Field(0, ge=0)
+    pageSize: int = Field(6, gt=0, lt=100)
 
-    @validator("pageSize")
-    def verify_page_size(cls, v, values, **kwargs):
-        if v > 100:
-            raise ValueError("Page size to large")
-        if v < 0:
-            raise ValueError("Page size cannot be negative")
-        return v
 
 class PaginationResponse(PaginationIn):
     total: PositiveInt
@@ -171,6 +162,11 @@ class Tag(BaseModel):
 class ImageSchema(BaseModel):
     url: str
 
+class EventImage(BaseModel):
+    event: ImageSchema
+    banner: ImageSchema
+    map: ImageSchema
+
 class EventDetailSchema(BaseModel):
     config: str
 
@@ -178,10 +174,11 @@ class EventAttributeIn(BaseModel):
     event_name: str 
     location: str 
     description: str 
-    # tags: list[Tag] | None    
+    tags: list[Tag] | None    
     phone_contact: str 
-    pictures: ImageSchema 
+    picture: EventImage 
     details: EventDetailSchema 
+    status: EventStatus
     start_date: datetime 
     duration: int 
 
@@ -190,6 +187,7 @@ class EventAttributeMid(EventAttributeIn):
 
 class EventAttribute(EventAttributeMid):
     id: int
+    organizer: str
 
 class PaginationEventList(BaseModel):
     data: list[EventAttribute] = []

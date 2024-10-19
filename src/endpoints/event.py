@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import APIRouter, Body, Path, Depends
+from fastapi import APIRouter, Body, Path, Query
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -19,7 +19,7 @@ router = APIRouter(prefix="/event", tags=['Events'])
 async def get_event(
     current_user: UserDependency,
     db_session: DatabaseDependency,
-    page_config: schemas.PaginationIn = Depends()
+    page_config: Annotated[schemas.PaginationIn, Query()]
 ) -> responses.EventListResponse:
 
     total, events = await event.get_all_event(db_session, page_config)
@@ -31,7 +31,7 @@ async def get_event(
 async def create_event(
     current_user: UserDependency,
     db_session: DatabaseDependency,
-    data: Annotated[schemas.EventAttributeIn, Body],
+    data: Annotated[schemas.EventAttributeIn, Body(embed=True)],
 ) -> responses.EventAttributeResponse :
     
     if current_user.organization_id is None:
@@ -56,7 +56,7 @@ async def get_event(
     current_user: UserDependency,
     db_session: DatabaseDependency,
     event_id: Annotated[int, Path],
-    event_data: Annotated[schemas.EventAttributeIn, Body]
+    event_data: Annotated[schemas.EventAttributeIn, Body(embed=True)]
 ) -> responses.EventAttributeResponse:
     
     event_organizer_id = await event.get_organizer_by_id(db_session, event_id)

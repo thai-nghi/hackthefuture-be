@@ -21,7 +21,7 @@ organization_role_enum = Enum(schemas.OrganizationRole, name="organization_role"
 review_type_enum = Enum(schemas.ReviewType, name="review_type")
 gender_enum = Enum(schemas.Gender, name="gender_enum")
 organization_type_enum = Enum(schemas.OrganizationType, name="organization_type")
-
+event_status_enum = Enum(schemas.EventStatus, name = 'event_status')
 # Table Definitions
 
 users = Table(
@@ -52,8 +52,10 @@ events = Table(
     Column("location", String, nullable=False),
     Column("description", TEXT, nullable=False),
     Column("phone_contact", String, nullable=False),
+    Column("tags", JSONB, nullable=True),
     Column("pictures", JSONB, nullable=True),
     Column("details", JSONB, nullable=True),
+    Column("status", event_status_enum, nullable=False, default=text("HIDDEN")),
     Column("start_date", TIMESTAMP(timezone=True),
         server_default=text("current_timestamp"), nullable=False),
     Column("duration", Integer, nullable=False),

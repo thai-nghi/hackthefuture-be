@@ -75,7 +75,6 @@ async def user_detail_by_email(
             user_tbl.c.birth_date,
             user_tbl.c.gender,
             user_tbl.c.avatar,
-            organizations_tbl.c.organization_name,
             organization_members_tbl.c.organization_id
         )
         .select_from(joined_table)
@@ -107,7 +106,6 @@ async def get_user_by_google_id(
             user_tbl.c.birth_date,
             user_tbl.c.gender,
             user_tbl.c.avatar,
-            organizations_tbl.c.organization_name,
             organization_members_tbl.c.organization_id
         )
         .select_from(
@@ -142,10 +140,9 @@ async def user_by_id(db_session: AsyncSession, id: int) -> schemas.UserResponse:
             user_tbl.c.email,
             user_tbl.c.first_name,
             user_tbl.c.last_name,
-            user_tbl.c.age,
+            user_tbl.c.birth_date,
             user_tbl.c.gender,
             user_tbl.c.avatar,
-            organizations_tbl.c.organization_name,
             organization_members_tbl.c.organization_id,
         )
         .select_from(
