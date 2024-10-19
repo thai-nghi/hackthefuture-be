@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import APIRouter, Body, Path
+from fastapi import APIRouter, Body, Path, Depends
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -19,10 +19,12 @@ router = APIRouter(prefix="/event", tags=['Events'])
 async def get_event(
     current_user: UserDependency,
     db_session: DatabaseDependency,
+    page_config: schemas.PaginationIn = Depends()
 ) -> responses.EventListResponse:
 
-    all_events = await event.get_all_event(db_session)
-    return responses.EventListResponse(data=[event.dict() for event in all_events])
+    total, events = await event.get_all_event(db_session, page_config)
+    page_response = schemas.PaginationResponse(total=total, **page_config.dict())
+    return responses.EventListResponse(data=events, page=page_response)
 
 
 @router.post("/", response_model=responses.EventAttributeResponse)

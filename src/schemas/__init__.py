@@ -73,7 +73,6 @@ class UserLogin(BaseModel):
     
     @root_validator
     def ensure_credentals(cls, values):
-        print(values)
         if "username" in values:
             values["email"] = values["username"]
         if "email" not in values and "google_token" not in values:
@@ -133,23 +132,30 @@ class Membership(BaseModel):
     organization_id: int
     role: OrganizationRole
 
-class PaginationRequest(BaseModel):
-    currentPage: PositiveInt
-    pageSize: PositiveInt = 6
-    @validator("pageSize")
-    def verify_page_size(cls, v, values, **kwargs):
-        page_size = values.get("pageSize")
-        if page_size > 100:
-            raise ValueError("Page size to large")
+class PaginationIn(BaseModel):
+    currentPage: int
+    pageSize: int = 6
+    @validator("currentPage")
+    def verify_current_page(cls, v, values, **kwargs):
+        if v < 0:
+            raise ValueError("Current page cannot be negative")
         return v
 
-class PaginationResponse(PaginationRequest):
+    @validator("pageSize")
+    def verify_page_size(cls, v, values, **kwargs):
+        if v > 100:
+            raise ValueError("Page size to large")
+        if v < 0:
+            raise ValueError("Page size cannot be negative")
+        return v
+
+class PaginationResponse(PaginationIn):
     total: PositiveInt
 
 class EventListQuery(BaseModel):
     location: str 
     categories: list[str] | str
-    page: PaginationRequest
+    page: PaginationIn
 
 class EventListRequest(BaseModel):
     data: EventListQuery
@@ -183,4 +189,3 @@ class EventAttribute(EventAttributeMid):
 
 class PaginationEventList(BaseModel):
     data: list[EventAttribute] = []
-    # page: PaginationResponse

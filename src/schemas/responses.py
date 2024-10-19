@@ -18,6 +18,8 @@ class MembershipResponse(BaseResponse):
 
 class EventListResponse(BaseResponse):
     data: list[schemas.EventAttribute]
+    page: schemas.PaginationResponse
 
 class EventAttributeResponse(BaseResponse):
     data: schemas.EventAttribute
+    
