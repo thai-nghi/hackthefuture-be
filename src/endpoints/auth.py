@@ -36,7 +36,7 @@ async def register(
     hashed_password = get_password_hash(data.password)
 
     created_user = await user_service.create_user_by_email(
-        db_session, data, hashed_password
+        db_session, data, hashed_password, None
     )
 
     create_and_inject_token(response, created_user)

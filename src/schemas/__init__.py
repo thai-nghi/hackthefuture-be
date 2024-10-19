@@ -1,6 +1,6 @@
 from typing import Any
-from datetime import datetime, date
-from pydantic import BaseModel, validator, EmailStr, root_validator
+from pydantic import BaseModel, PositiveInt, validator, EmailStr, root_validator, Field
+from datetime import datetime
 import enum
 
 class DocumentType(enum.Enum):
@@ -29,6 +29,10 @@ class Gender(enum.Enum):
 class OrganizationType(enum.Enum):
     EVENT_ORGANIZER = "ORGANIZER"
     VENDOR = "VENDOR"
+
+class EventStatus(enum.Enum):
+    HIDDEN = "HIDDEN"
+    PUBLIC = "PUBLIC"
 
 class UserBase(BaseModel):
     email: EmailStr
@@ -100,7 +104,7 @@ class SuccessResponseScheme(BaseModel):
 
 class UserResponse(UserBase):
     id: int
-    organization: str | None
+    organization_id: int | None
 
 class DocumentAttribute(BaseModel):
     file_url: str
@@ -114,6 +118,7 @@ class OrganizationAttributes(BaseModel):
     organization_name: str
     contact_address: str
     contact_phone: str
+    organization_type: OrganizationType = OrganizationType.VENDOR
 
 class OrganizationIn(OrganizationAttributes):
     documents: list[DocumentAttribute] | None
@@ -129,3 +134,60 @@ class City(BaseModel):
     label: str
     value: int
     
+class Membership(BaseModel):
+    user_id: int
+    organization_id: int
+    role: OrganizationRole
+
+class PaginationIn(BaseModel):
+    currentPage: int = Field(0, ge=0)
+    pageSize: int = Field(6, gt=0, lt=100)
+
+
+class PaginationResponse(PaginationIn):
+    total: PositiveInt
+
+class EventListQuery(BaseModel):
+    location: str 
+    categories: list[str] | str
+    page: PaginationIn
+
+class EventListRequest(BaseModel):
+    data: EventListQuery
+
+class Tag(BaseModel):
+    name: str
+    color: str 
+
+class ImageSchema(BaseModel):
+    url: str
+
+class EventImage(BaseModel):
+    event: list[ImageSchema]
+    banner: list[ImageSchema]
+    map: ImageSchema
+
+class EventDetailSchema(BaseModel):
+    config: str
+
+class EventAttributeIn(BaseModel):
+    event_name: str 
+    location: str 
+    description: str 
+    tags: list[Tag] | None    
+    phone_contact: str 
+    picture: EventImage 
+    details: EventDetailSchema 
+    status: EventStatus
+    start_date: datetime 
+    duration: int 
+
+class EventAttributeMid(EventAttributeIn):
+    organizer_id: int
+
+class EventAttribute(EventAttributeMid):
+    id: int
+    organizer: str
+
+class PaginationEventList(BaseModel):
+    data: list[EventAttribute] = []

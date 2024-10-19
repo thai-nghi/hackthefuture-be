@@ -75,7 +75,7 @@ async def user_detail_by_email(
             user_tbl.c.birth_date,
             user_tbl.c.gender,
             user_tbl.c.avatar,
-            organizations_tbl.c.organization_name,
+            organization_members_tbl.c.organization_id
         )
         .select_from(joined_table)
         .where(user_tbl.c.email == email)
@@ -106,7 +106,7 @@ async def get_user_by_google_id(
             user_tbl.c.birth_date,
             user_tbl.c.gender,
             user_tbl.c.avatar,
-            organizations_tbl.c.organization_name,
+            organization_members_tbl.c.organization_id
         )
         .select_from(
             user_tbl.join(google_tbl, google_tbl.c.user_id == user_tbl.c.id)
@@ -131,19 +131,35 @@ async def get_user_by_google_id(
 
 async def user_by_id(db_session: AsyncSession, id: int) -> schemas.UserResponse:
     user_tbl = db_tables.users
+    organization_members_tbl = db_tables.organization_members
+    organizations_tbl = db_tables.organizations
 
-    query = select(
-        user_tbl.c.id,
-        user_tbl.c.email,
-        user_tbl.c.first_name,
-        user_tbl.c.last_name,
-        user_tbl.c.birth_date,
-        user_tbl.c.gender,
-        user_tbl.c.avatar,
-    ).where(user_tbl.c.id == id)
-
+    query = (
+        select(
+            user_tbl.c.id,
+            user_tbl.c.email,
+            user_tbl.c.first_name,
+            user_tbl.c.last_name,
+            user_tbl.c.birth_date,
+            user_tbl.c.gender,
+            user_tbl.c.avatar,
+            organization_members_tbl.c.organization_id,
+        )
+        .select_from(
+            user_tbl.join(
+                organization_members_tbl,
+                organization_members_tbl.c.user_id == user_tbl.c.id,
+                isouter=True
+            )
+            .join(
+                organizations_tbl,
+                organizations_tbl.c.id == organization_members_tbl.c.organization_id,
+                isouter=True
+            )
+        )
+        .where(user_tbl.c.id == id)
+    )
     user = (await db_session.execute(query)).first()
-
     if user is None:
         raise exceptions.NotFoundException
 
