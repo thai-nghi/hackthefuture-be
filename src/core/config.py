@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     POSTGRES_DB: str
 
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRES_MINUTES: int = 60
+    ACCESS_TOKEN_EXPIRES_MINUTES: int = 24*60
     REFRESH_TOKEN_EXPIRES_MINUTES: int = 15 * 24 * 60  # 15 days
 
     SECRET_KEY: str

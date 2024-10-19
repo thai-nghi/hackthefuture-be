@@ -30,3 +30,15 @@ async def citie_of_countries(
     cities = await metadata.cities_of_countries(db_session, country_id)
 
     return responses.GenericResponse(data={"cities": cities})
+
+
+@router.get("/org")
+async def org_metadata():
+    return responses.GenericResponse(
+        data={
+            "company_size": [
+                {"label": org_size.capitalize(), "value": org_size}
+                for org_size in schemas.OrganizationSize._member_names_
+            ]
+        }
+    )

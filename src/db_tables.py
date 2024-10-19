@@ -21,7 +21,9 @@ organization_role_enum = Enum(schemas.OrganizationRole, name="organization_role"
 review_type_enum = Enum(schemas.ReviewType, name="review_type")
 gender_enum = Enum(schemas.Gender, name="gender_enum")
 organization_type_enum = Enum(schemas.OrganizationType, name="organization_type")
-event_status_enum = Enum(schemas.EventStatus, name = 'event_status')
+event_status_enum = Enum(schemas.EventStatus, name="event_status")
+organization_size = Enum(schemas.OrganizationSize, name="organization_size")
+
 # Table Definitions
 
 users = Table(
@@ -56,8 +58,12 @@ events = Table(
     Column("pictures", JSONB, nullable=True),
     Column("details", JSONB, nullable=True),
     Column("status", event_status_enum, nullable=False, default=text("HIDDEN")),
-    Column("start_date", TIMESTAMP(timezone=True),
-        server_default=text("current_timestamp"), nullable=False),
+    Column(
+        "start_date",
+        TIMESTAMP(timezone=True),
+        server_default=text("current_timestamp"),
+        nullable=False,
+    ),
     Column("duration", Integer, nullable=False),
 )
 
@@ -69,10 +75,18 @@ event_applications = Table(
     Column("applicant_id", ForeignKey("organizations.id"), nullable=False, index=True),
     Column("application_data", JSONB, nullable=True),
     Column("status", application_status_enum, nullable=False),
-    Column("created_at", TIMESTAMP(timezone=True),
-        server_default=text("current_timestamp"), nullable=False),
-    Column("updated_at", TIMESTAMP(timezone=True),
-        server_default=text("current_timestamp"), nullable=True),
+    Column(
+        "created_at",
+        TIMESTAMP(timezone=True),
+        server_default=text("current_timestamp"),
+        nullable=False,
+    ),
+    Column(
+        "updated_at",
+        TIMESTAMP(timezone=True),
+        server_default=text("current_timestamp"),
+        nullable=True,
+    ),
     Column("updated_by", Integer, nullable=True),
 )
 
@@ -103,7 +117,15 @@ organizations = Table(
     Column("organization_name", String, nullable=False),
     Column("contact_address", String, nullable=False),
     Column("contact_phone", String, nullable=False),
-    Column("organization_type", organization_type_enum, default=text("VENDOR"), nullable=False)
+    Column(
+        "organization_type",
+        organization_type_enum,
+        default=text("VENDOR"),
+        nullable=False,
+    ),
+    Column("email", String, nullable=False),
+    Column("size", organization_size, nullable=False),
+    Column("years_of_operation", Integer, nullable=False),
 )
 
 organization_members = Table(
@@ -146,5 +168,5 @@ cities = Table(
     metadata_obj,
     Column("id", Integer, primary_key=True),
     Column("label", String, nullable=False),
-    Column("country", ForeignKey("countries.id"),nullable=False, index=True)
+    Column("country", ForeignKey("countries.id"), nullable=False, index=True),
 )
