@@ -3,22 +3,27 @@ from pydantic import BaseModel, PositiveInt, validator, EmailStr, root_validator
 from datetime import datetime
 import enum
 
+
 class DocumentType(enum.Enum):
     APPLICATION = "APPLICATION"
     ORGANIZATION = "ORGANIZATION"
+
 
 class ApplicationStatus(enum.Enum):
     IN_PROGRESS = "IN_PROGRESS"
     APPROVE = "APPROVE"
     REJECTED = "REJECTED"
 
+
 class OrganizationRole(enum.Enum):
     ADMIN = "ADMIN"
     STAFF = "STAFF"
 
+
 class ReviewType(enum.Enum):
     EVENT = "EVENT"
     VENDOR = "VENDOR"
+
 
 class Gender(enum.Enum):
     MALE = "MALE"
@@ -26,13 +31,22 @@ class Gender(enum.Enum):
     OTHER = "OTHER"
     UNDISCLOSED = "UNDISCLOSED"
 
+
 class OrganizationType(enum.Enum):
     EVENT_ORGANIZER = "ORGANIZER"
     VENDOR = "VENDOR"
 
+
 class EventStatus(enum.Enum):
     HIDDEN = "HIDDEN"
     PUBLIC = "PUBLIC"
+
+
+class OrganizationSize(enum.Enum):
+    LARGE = "LARGE"
+    MEDIUM = "MEDIUM"
+    SMALL = "SMALL"
+
 
 class UserBase(BaseModel):
     email: EmailStr
@@ -67,14 +81,16 @@ class UserRegister(UserBase):
 
         return v
 
+
 class GoogleRegister(UserBase):
     google_token: str
+
 
 class UserLogin(BaseModel):
     email: EmailStr | None
     password: str | None
     google_token: str | None
-    
+
     @root_validator
     def ensure_credentals(cls, values):
         if "username" in values:
@@ -83,9 +99,9 @@ class UserLogin(BaseModel):
             raise ValueError("Either email or google_token is needed")
         if "email" in values and "password" not in values:
             raise ValueError("Password is required for login with email")
-        
 
         return values
+
 
 class JwtTokenSchema(BaseModel):
     token: str
@@ -106,38 +122,50 @@ class UserResponse(UserBase):
     id: int
     organization_id: int | None
 
+
 class DocumentAttribute(BaseModel):
     file_url: str
     name: str
     type: DocumentType
 
+
 class Document(DocumentAttribute):
     id: int
+
 
 class OrganizationAttributes(BaseModel):
     organization_name: str
     contact_address: str
     contact_phone: str
+    years_of_operation: int
+    size: OrganizationSize
+    email: str
     organization_type: OrganizationType = OrganizationType.VENDOR
+
 
 class OrganizationIn(OrganizationAttributes):
     documents: list[DocumentAttribute] | None
 
+
 class Organization(OrganizationAttributes):
     id: int
+
 
 class Country(BaseModel):
     label: str
     value: int
 
+
 class City(BaseModel):
     label: str
     value: int
-    
+
+
 class Membership(BaseModel):
     user_id: int
     organization_id: int
     role: OrganizationRole
+
 
 class PaginationIn(BaseModel):
     currentPage: int = Field(0, ge=0)
@@ -147,47 +175,57 @@ class PaginationIn(BaseModel):
 class PaginationResponse(PaginationIn):
     total: PositiveInt
 
+
 class EventListQuery(BaseModel):
-    location: str 
+    location: str
     categories: list[str] | str
     page: PaginationIn
+
 
 class EventListRequest(BaseModel):
     data: EventListQuery
 
+
 class Tag(BaseModel):
     name: str
-    color: str 
+    color: str
+
 
 class ImageSchema(BaseModel):
     url: str
+
 
 class EventImage(BaseModel):
     event: list[ImageSchema]
     banner: list[ImageSchema]
     map: ImageSchema
 
+
 class EventDetailSchema(BaseModel):
     config: str
 
+
 class EventAttributeIn(BaseModel):
-    event_name: str 
-    location: str 
-    description: str 
-    tags: list[Tag] | None    
-    phone_contact: str 
-    picture: EventImage 
-    details: EventDetailSchema 
+    event_name: str
+    location: str
+    description: str
+    tags: list[Tag] | None
+    phone_contact: str
+    picture: EventImage
+    details: EventDetailSchema
     status: EventStatus
-    start_date: datetime 
-    duration: int 
+    start_date: datetime
+    duration: int
+
 
 class EventAttributeMid(EventAttributeIn):
     organizer_id: int
 
+
 class EventAttribute(EventAttributeMid):
     id: int
     organizer: str
+
 
 class PaginationEventList(BaseModel):
     data: list[EventAttribute] = []
