@@ -21,3 +21,9 @@ async def cities_of_countries(db_session: AsyncSession, country_id: int) -> list
     rows = (await db_session.execute(query))
 
     return [schemas.City(label=row._mapping['label'], value=row._mapping['id']) for row in rows]
+
+async def all_tags(db_session: AsyncSession) -> list[schemas.Tag]:
+
+    rows = await db_session.execute(select(db_tables.tags))
+
+    return [schemas.Tag(label=row._mapping['label'], value=row._mapping['id']) for row in rows]

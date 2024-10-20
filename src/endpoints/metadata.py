@@ -33,12 +33,14 @@ async def citie_of_countries(
 
 
 @router.get("/org")
-async def org_metadata():
+async def org_metadata(db_session: DatabaseDependency):
+    tags = await metadata.all_tags(db_session)
     return responses.GenericResponse(
         data={
             "company_size": [
                 {"label": org_size.capitalize(), "value": org_size}
                 for org_size in schemas.OrganizationSize._member_names_
-            ]
+            ],
+            "tags": tags
         }
     )

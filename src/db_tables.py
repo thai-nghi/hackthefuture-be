@@ -170,3 +170,27 @@ cities = Table(
     Column("label", String, nullable=False),
     Column("country", ForeignKey("countries.id"), nullable=False, index=True),
 )
+
+tags = Table(
+    "tags",
+    metadata_obj,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("label", String, nullable=False)
+)
+
+
+event_tag = Table(
+    "event_tags",
+    metadata_obj,
+    Column("event_id", ForeignKey("events.id"), nullable=False),
+    Column("tag_id", ForeignKey("tags.id"), nullable=False),
+    PrimaryKeyConstraint("event_id", "tag_id", name="event_tags_pk"),
+)
+
+org_tags = Table(
+    "org_tags",
+    metadata_obj,
+    Column("organization_id", ForeignKey("organizations.id"), nullable=False),
+    Column("tag_id", ForeignKey("tags.id"), nullable=False),
+    PrimaryKeyConstraint("organization_id", "tag_id", name="org_tags_pk"),
+)
