@@ -23,7 +23,7 @@ async def user_org(
 ) -> responses.OrganizationResponse:
 
     data = await organization.organization_by_user_data(
-        db_session, current_user.id, current_user.organization
+        db_session, current_user.id
     )
 
     return responses.OrganizationResponse(data=data)
@@ -39,15 +39,7 @@ async def create_org(
         raise BadRequestException("User already has an organization")
 
     new_organization = await organization.new_organization(db_session, data)
-    await organization.add_employee(
-        db_session,
-        schemas.Membership(
-            user_id=current_user.id,
-            organization_id=new_organization.id,
-            role=schemas.OrganizationRole.ADMIN,
-        ),
-    )
-
+    
     await organization.add_employee(
         db_session,
         schemas.Membership(
@@ -58,6 +50,7 @@ async def create_org(
     )
 
     await document.add_documents(db_session, new_organization.id, data.documents)
+    
     await db_session.commit()
 
     return responses.OrganizationResponse(data=new_organization)

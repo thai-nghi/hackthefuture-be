@@ -117,10 +117,14 @@ class TokenPair(BaseModel):
 class SuccessResponseScheme(BaseModel):
     msg: str
 
+class Tag(BaseModel):
+    value: int
+    label: str
 
 class UserResponse(UserBase):
     id: int
     organization_id: int | None
+    avatar: str
 
 
 class DocumentAttribute(BaseModel):
@@ -133,6 +137,7 @@ class Document(DocumentAttribute):
     id: int
 
 
+
 class OrganizationAttributes(BaseModel):
     organization_name: str
     contact_address: str
@@ -141,15 +146,14 @@ class OrganizationAttributes(BaseModel):
     size: OrganizationSize
     email: str
     organization_type: OrganizationType = OrganizationType.VENDOR
-
-
+    
 class OrganizationIn(OrganizationAttributes):
     documents: list[DocumentAttribute] | None
-
+    tags: list[int] | None
 
 class Organization(OrganizationAttributes):
     id: int
-
+    tags: list[Tag] | None
 
 class Country(BaseModel):
     label: str
@@ -184,11 +188,6 @@ class EventListQuery(BaseModel):
 
 class EventListRequest(BaseModel):
     data: EventListQuery
-
-
-class Tag(BaseModel):
-    name: str
-    color: str
 
 
 class ImageSchema(BaseModel):
