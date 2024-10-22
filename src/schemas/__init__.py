@@ -13,6 +13,8 @@ class ApplicationStatus(enum.Enum):
     IN_PROGRESS = "IN_PROGRESS"
     APPROVE = "APPROVE"
     REJECTED = "REJECTED"
+    PAYMENT_REQUEST = "PAYMENT_REQUEST"
+    FINALIZED = "FINALIZED"
 
 
 class OrganizationRole(enum.Enum):
@@ -124,7 +126,7 @@ class Tag(BaseModel):
 class UserResponse(UserBase):
     id: int
     organization_id: int | None
-    avatar: str
+    avatar: str | None
 
 
 class DocumentAttribute(BaseModel):
@@ -150,10 +152,14 @@ class OrganizationAttributes(BaseModel):
 class OrganizationIn(OrganizationAttributes):
     documents: list[DocumentAttribute] | None
     tags: list[int] | None
+    country: int
+    city: int
 
 class Organization(OrganizationAttributes):
     id: int
     tags: list[Tag] | None
+    country: str
+    city: str
 
 class Country(BaseModel):
     label: str
@@ -201,20 +207,22 @@ class EventImage(BaseModel):
 
 
 class EventDetailSchema(BaseModel):
-    config: str
+    config: dict[str, Any]
 
 
 class EventAttributeIn(BaseModel):
     event_name: str
-    location: str
+    street_addr: str
     description: str
-    tags: list[Tag] | None
+    tags: list[int] | None
     phone_contact: str
-    picture: EventImage
+    pictures: EventImage
     details: EventDetailSchema
-    status: EventStatus
+    status: EventStatus = EventStatus.HIDDEN
     start_date: datetime
-    duration: int
+    end_date: datetime
+    city: int
+    country: int
 
 
 class EventAttributeMid(EventAttributeIn):
@@ -224,6 +232,9 @@ class EventAttributeMid(EventAttributeIn):
 class EventAttribute(EventAttributeMid):
     id: int
     organizer: str
+    city: str
+    country: str
+    tags: list[Tag] | None
 
 
 class PaginationEventList(BaseModel):

@@ -51,10 +51,9 @@ events = Table(
     Column("id", Integer, primary_key=True),
     Column("organizer_id", ForeignKey("organizations.id"), nullable=False, index=True),
     Column("event_name", String, nullable=False),
-    Column("location", String, nullable=False),
+    Column("street_addr", String, nullable=False),
     Column("description", TEXT, nullable=False),
     Column("phone_contact", String, nullable=False),
-    Column("tags", JSONB, nullable=True),
     Column("pictures", JSONB, nullable=True),
     Column("details", JSONB, nullable=True),
     Column("status", event_status_enum, nullable=False, default=text("HIDDEN")),
@@ -64,7 +63,14 @@ events = Table(
         server_default=text("current_timestamp"),
         nullable=False,
     ),
-    Column("duration", Integer, nullable=False),
+    Column(
+        "end_date",
+        TIMESTAMP(timezone=True),
+        server_default=text("current_timestamp"),
+        nullable=False,
+    ),
+    Column("country", ForeignKey("countries.id"), nullable=False, index=True),
+    Column("city", ForeignKey("cities.id"), nullable=False, index=True)
 )
 
 event_applications = Table(
@@ -126,6 +132,8 @@ organizations = Table(
     Column("email", String, nullable=False),
     Column("size", organization_size, nullable=False),
     Column("years_of_operation", Integer, nullable=False),
+    Column("country", ForeignKey("countries.id"), nullable=False, index=True),
+    Column("city", ForeignKey("cities.id"), nullable=False, index=True)
 )
 
 organization_members = Table(

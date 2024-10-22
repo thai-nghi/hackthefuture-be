@@ -22,7 +22,7 @@ document_type_enum = postgresql.ENUM(
 )
 
 application_status_enum = postgresql.ENUM(
-    "IN_PROGRESS", "APPROVE", "REJECTED", name="application_status", create_type=False,
+    "IN_PROGRESS", "APPROVE", "REJECTED", "PAYMENT_REQUEST", "FINALIZED", name="application_status", create_type=False,
 )
 
 organization_role_enum = postgresql.ENUM("ADMIN", "STAFF", name="organization_role", create_type=False,)
