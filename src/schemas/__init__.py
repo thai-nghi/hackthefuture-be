@@ -239,3 +239,21 @@ class EventAttribute(EventAttributeMid):
 
 class PaginationEventList(BaseModel):
     data: list[EventAttribute] = []
+
+class EventApplicationIn(BaseModel):
+    applicant_id: int
+    application_data: str
+    
+
+class EventApplicationMid(EventApplicationIn):
+    event_id: int
+    created_at: datetime
+    updated_at: datetime
+    updated_by: int
+    status: ApplicationStatus
+
+class EventApplication(EventApplicationMid):
+    id: int
+
+class ApplicationStatusIn(BaseModel):
+    status: ApplicationStatus

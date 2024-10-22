@@ -9,7 +9,7 @@ from src.exceptions import BadRequestException
 from src import schemas
 from src.schemas import responses
 
-from src.services import organization, document, event
+from src.services import organization, document, event, application
 
 router = APIRouter(
     prefix="/org", dependencies=[Depends(get_current_user)], tags=["Organizations"]
@@ -81,3 +81,14 @@ async def get_event(
     
     upcoming_event = await event.event_by_org_id(db_session, current_user.organization_id)
     return responses.EventAttributeResponse(data=upcoming_event)
+
+@router.get("/{org_id}/application", response_model=responses.EventApplicationListResponse)
+async def get_application(
+    current_user: UserDependency,
+    db_session: DatabaseDependency,
+    org_id: int
+) -> responses.EventApplicationListResponse:
+    if current_user.organization_id != org_id:
+        raise BadRequestException("Only member of the organization can see its application")
+    applications = await application.application_by_org_id(db_session, org_id)
+    return responses.EventApplicationListResponse(data=applications)

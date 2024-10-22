@@ -10,8 +10,8 @@ from src import schemas
 
 from src.schemas import responses
 
-from src.services import event, organization
 import datetime
+from src.services import event, organization, application
 
 router = APIRouter(prefix="/event", tags=["Events"])
 
@@ -82,4 +82,44 @@ async def get_event(
 
     retrieved_event = await event.update_event(db_session, event_id, event_data)
     await db_session.commit()
+<<<<<<< HEAD
     return responses.EventAttributeResponse(data=retrieved_event)
+=======
+    return responses.EventAttributeResponse(data = retrieved_event)
+
+@router.get("/{event_id}/application", response_model=responses.EventApplicationListResponse)
+async def get_event_application(
+    current_user: UserDependency,
+    db_session: DatabaseDependency,
+    event_id: Annotated[int, Path]
+) -> responses.EventApplicationListResponse:
+    applied = await application.get_application_by_event_id(db_session, event_id)
+    return responses.EventApplicationListResponse(data=applied)
+
+@router.post("/{event_id}/application", response_model=responses.EventApplicationResponse)
+async def get_event_application(
+    current_user: UserDependency,
+    db_session: DatabaseDependency,
+    event_id: Annotated[int, Path],
+    event_data: schemas.EventApplicationIn
+) -> responses.EventApplicationResponse:
+    inserted_application = await application.add_new_application(db_session, event_id, current_user.organization_id, event_data)
+    await db_session.commit()
+
+    return responses.EventApplicationResponse(data=inserted_application)
+
+
+@router.post("/{event_id}/application/{application_id}", response_model=responses.EventApplicationResponse)
+async def set_status(
+    current_user: UserDependency,
+    db_session: DatabaseDependency,
+    event_id: Annotated[int, Path],
+    application_id: Annotated[int, Path],
+    status: schemas.ApplicationStatusIn
+) -> responses.EventApplicationResponse:
+    event_organizer_id = await event.get_organizer_by_id(db_session, event_id)
+    if event_organizer_id != current_user.organization_id:
+        raise BadRequestException(detail='Only organizer can change the status of the application')
+    updated = await application.update_status(db_session, event_id, application_id, status)
+    return responses.EventApplicationResponse(data = updated)
+>>>>>>> Add the last 4 api
