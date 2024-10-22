@@ -82,9 +82,6 @@ async def get_event(
 
     retrieved_event = await event.update_event(db_session, event_id, event_data)
     await db_session.commit()
-<<<<<<< HEAD
-    return responses.EventAttributeResponse(data=retrieved_event)
-=======
     return responses.EventAttributeResponse(data = retrieved_event)
 
 @router.get("/{event_id}/application", response_model=responses.EventApplicationListResponse)
@@ -122,4 +119,3 @@ async def set_status(
         raise BadRequestException(detail='Only organizer can change the status of the application')
     updated = await application.update_status(db_session, event_id, application_id, status)
     return responses.EventApplicationResponse(data = updated)
->>>>>>> Add the last 4 api

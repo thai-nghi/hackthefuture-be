@@ -86,9 +86,20 @@ async def get_event(
 async def get_application(
     current_user: UserDependency,
     db_session: DatabaseDependency,
-    org_id: int
+    org_id: Annotated[int, Path()]
 ) -> responses.EventApplicationListResponse:
     if current_user.organization_id != org_id:
         raise BadRequestException("Only member of the organization can see its application")
     applications = await application.application_by_org_id(db_session, org_id)
     return responses.EventApplicationListResponse(data=applications)
+
+
+@router.get("/{org_id}", response_model=responses.OrganizationResponse)
+async def organization_by_id(
+    current_user: UserDependency,
+    db_session: DatabaseDependency,
+    org_id: Annotated[int, Path()]
+) -> responses.OrganizationResponse:
+    org = await organization.organization_by_id(db_session, org_id)
+
+    return responses.OrganizationResponse(data=org)
