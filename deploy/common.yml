@@ -23,6 +23,7 @@ services:
     restart: always
     environment:
       - POSTGRES_HOST=postgres
+      - MINIO_URL=minio
     ports:
       - "8000:8000"
     links:

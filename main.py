@@ -40,8 +40,9 @@ async def handle_token(request: Request, call_next):
 
     return await call_next(request)
 
+print(f"{settings.MINIO_URL}:{settings.MINIO_PORT}")
 app.state.minio_client = Minio(
-    settings.MINIO_URL,
+    f"{settings.MINIO_URL}:{settings.MINIO_PORT}",
     access_key=settings.MINIO_ACCESS,
     secret_key=settings.MINIO_SECRET,
     secure=False

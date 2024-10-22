@@ -48,8 +48,8 @@ async def organization_by_id(db_session: AsyncSession, id: int) -> schemas.Organ
     query = (
         select(
             org_tbl,
-            country_tbl.c.label,
-            city_tbl.c.label,
+            country_tbl.c.label.label("country_label"),
+            city_tbl.c.label.label("city_label"),
             array_agg(
                 func.json_build_object("value", tag_tbl.c.id, "label", tag_tbl.c.label)
             ).label("tags"),
@@ -110,12 +110,13 @@ async def organization_by_user_data(
             array_agg(
                 func.json_build_object("value", tag_tbl.c.id, "label", tag_tbl.c.label)
             ).label("tags"),
-            country_tbl.c.label,
-            city_tbl.c.label,
+            country_tbl.c.label.label("country_label"),
+            city_tbl.c.label.label("city_label"),
         )
         .select_from(join_stmt)
         .group_by(
-            org_tbl.c.idountry_tbl.c.label,
+            org_tbl.c.id,
+            country_tbl.c.label,
             city_tbl.c.label,
         )
         .where(organization_members_tbl.c.user_id == user_id)
