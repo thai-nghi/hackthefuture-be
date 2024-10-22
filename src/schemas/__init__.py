@@ -148,18 +148,18 @@ class OrganizationAttributes(BaseModel):
     size: OrganizationSize
     email: str
     organization_type: OrganizationType = OrganizationType.VENDOR
-    
-class OrganizationIn(OrganizationAttributes):
-    documents: list[DocumentAttribute] | None
-    tags: list[int] | None
     country: int
     city: int
 
+class OrganizationIn(OrganizationAttributes):
+    documents: list[DocumentAttribute] | None
+    tags: list[int] | None
+    
 class Organization(OrganizationAttributes):
     id: int
     tags: list[Tag] | None
-    country: str
-    city: str
+    country_label: str
+    city_label: str
 
 class Country(BaseModel):
     label: str

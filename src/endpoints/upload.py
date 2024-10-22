@@ -22,7 +22,7 @@ async def uploadFile(
 
     if file.content_type.startswith('image'):
         return responses.GenericResponse(data={
-            "imgUrl": f"http://{settings.MINIO_URL}/{upload_result.bucket_name}/{upload_result.object_name}"
+            "imgUrl": f"http://{settings.MINIO_URL}:{settings.MINIO_PORT}/{upload_result.bucket_name}/{upload_result.object_name}"
         })
     
     return responses.GenericResponse(data={

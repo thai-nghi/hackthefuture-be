@@ -12,14 +12,22 @@ from sqlalchemy.dialects.postgresql import array_agg
 from src import exceptions
 import datetime
 
+
 async def get_all_event(
-    db_session: AsyncSession, page_config: schemas.PaginationIn
+    db_session: AsyncSession,
+    page_config: schemas.PaginationIn,
+    city: int | None = None,
+    country: int | None = None,
+    tags: list[int] | None = None,
+    start_after: datetime.datetime | None = None,
 ) -> list[schemas.EventAttribute]:
 
     event_tbl = db_tables.events
 
-    offset = page_config.pageSize * page_config.currentPage
-    query = select(event_tbl).limit(page_config.pageSize).offset(offset)
+    query = build_event_select_query(city=city, country=country, tags=tags, start_after=start_after)
+
+    offset = page_config.pageSize * (page_config.currentPage-1)
+    query = query.limit(page_config.pageSize).offset(offset)
 
     all_events = (await db_session.execute(query)).all()
 
@@ -27,7 +35,15 @@ async def get_all_event(
     total = (await db_session.execute(query)).scalar()
     return total, [schemas.EventAttribute(**event._mapping) for event in all_events]
 
-def build_event_select_query():
+
+def build_event_select_query(
+    city: int | None = None,
+    country: int | None = None,
+    tags: list[int] | None = None,
+    start_after: datetime.datetime | None = None,
+    org_id: int | None = None,
+    event_id: int | None = None,
+):
     event_tbl = db_tables.events
     org_tbl = db_tables.organizations
     tag_tbl = db_tables.tags
@@ -43,7 +59,7 @@ def build_event_select_query():
         .join(tag_tbl, event_tag_tbl.c.tag_id == tag_tbl.c.id, isouter=True)
     )
 
-    return (
+    query = (
         select(
             event_tbl.c.id,
             event_tbl.c.organizer_id,
@@ -72,13 +88,31 @@ def build_event_select_query():
         )
     )
 
+    if city is not None:
+        query = query.where(event_tbl.c.city == city)
 
-async def event_by_org_id(db_session: AsyncSession, org_id: int) -> schemas.EventAttribute:
-    
-    event_tbl = db_tables.events
-    query = build_event_select_query()
+    if country is not None:
+        query = query.where(event_tbl.c.country == country)
 
-    query = query.where(event_tbl.c.organizer_id == org_id).where(event_tbl.c.start_date > datetime.datetime.now())
+    if tags is not None:
+        query = query.where(event_tag_tbl.c.tag_id.in_(tags))
+
+    if start_after is not None:
+        query = query.where(event_tbl.c.start_date > start_after)
+
+    if org_id is not None:
+        query = query.where(event_tbl.c.organizer_id == org_id)
+
+    if event_id is not None:
+        query = query.where(event_tbl.c.id == event_id)
+
+    return query
+
+
+async def event_by_org_id(
+    db_session: AsyncSession, org_id: int
+) -> schemas.EventAttribute:
+    query = build_event_select_query(start_after=datetime.datetime.now(), org_id=org_id)
 
     result = (await db_session.execute(query)).first()
 
@@ -87,12 +121,10 @@ async def event_by_org_id(db_session: AsyncSession, org_id: int) -> schemas.Even
 
     return schemas.EventAttribute(**result._mapping)
 
+
 async def get_event_by_id(db_session: AsyncSession, id: int) -> schemas.EventAttribute:
 
-    event_tbl = db_tables.events
-    query = build_event_select_query()
-    
-    query = query.where(event_tbl.c.id == id)
+    query = build_event_select_query(event_id=id)
 
     result = (await db_session.execute(query)).first()
 
@@ -108,7 +140,11 @@ async def create_new_event(
 
     event_tbl = db_tables.events
 
-    query = pg_insert(event_tbl).values(**event_data.dict(exclude={"tags"})).returning(event_tbl.c.id)
+    query = (
+        pg_insert(event_tbl)
+        .values(**event_data.dict(exclude={"tags"}))
+        .returning(event_tbl.c.id)
+    )
 
     inserted_id = (await db_session.execute(query)).scalar()
 

@@ -76,5 +76,12 @@ END $$;
 
 ```
 
+# Init data
 
+```bash
+psql -U htf -h 127.0.0.1 -p 5432 -d htf -f sql_scripts/countries.sql
+psql -U htf -h 127.0.0.1 -p 5432 -d htf -f sql_scripts/tags.sql
+python -m src.support_script.remake_org_user_data
+psql -U htf -h 127.0.0.1 -p 5432 -d htf -f sql_scripts/user_and_org.sql
+python -m src.support_script.insert_events
 
