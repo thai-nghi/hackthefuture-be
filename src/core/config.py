@@ -14,6 +14,13 @@ class Settings(BaseSettings):
 
     SECRET_KEY: str
 
+    MINIO_ACCESS: str
+    MINIO_SECRET: str
+    MINIO_URL: str
+    DOCUMENT_BUCKET_NAME: str
+    IMAGE_BUCKET_NAME: str
+    MINIO_PORT: str
+
     class Config:
         env_file = '.dev.env'
         env_file_encoding = 'utf-8'

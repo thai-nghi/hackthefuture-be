@@ -35,20 +35,31 @@ async def organization_by_id(db_session: AsyncSession, id: int) -> schemas.Organ
     org_tbl = db_tables.organizations
     org_tag_tbl = db_tables.org_tags
     tag_tbl = db_tables.tags
+    country_tbl = db_tables.countries
+    city_tbl = db_tables.cities
+
+    join_stmt = (
+        org_tbl.join(country_tbl, org_tbl.c.country == country_tbl.c.id)
+        .join(city_tbl, org_tbl.c.city == city_tbl.c.id)
+        .join(org_tag_tbl, org_tbl.c.id == org_tag_tbl.c.organization_id, isouter=True)
+        .join(tag_tbl, org_tag_tbl.c.tag_id == tag_tbl.c.id, isouter=True)
+    )
 
     query = (
         select(
             org_tbl,
+            country_tbl.c.label,
+            city_tbl.c.label,
             array_agg(
                 func.json_build_object("value", tag_tbl.c.id, "label", tag_tbl.c.label)
             ).label("tags"),
         )
-        .select_from(
-            org_tbl.join(
-                org_tag_tbl, org_tbl.c.id == org_tag_tbl.c.organization_id, isouter=True
-            ).join(tag_tbl, org_tag_tbl.c.tag_id == tag_tbl.c.id, isouter=True)
+        .select_from(join_stmt)
+        .group_by(
+            org_tbl.c.id,
+            country_tbl.c.label,
+            city_tbl.c.label,
         )
-        .group_by(org_tbl.c.id)
         .where(org_tbl.c.id == id)
     )
 
@@ -80,6 +91,18 @@ async def organization_by_user_data(
     org_tbl = db_tables.organizations
     org_tag_tbl = db_tables.org_tags
     tag_tbl = db_tables.tags
+    country_tbl = db_tables.countries
+    city_tbl = db_tables.cities
+
+    join_stmt = (
+        organization_members_tbl.join(
+            org_tbl, organization_members_tbl.c.organization_id == org_tbl.c.id
+        )
+        .join(country_tbl, org_tbl.c.country == country_tbl.c.id)
+        .join(city_tbl, org_tbl.c.city == city_tbl.c.id)
+        .join(org_tag_tbl, org_tbl.c.id == org_tag_tbl.c.organization_id, isouter=True)
+        .join(tag_tbl, org_tag_tbl.c.tag_id == tag_tbl.c.id, isouter=True)
+    )
 
     query = (
         select(
@@ -87,14 +110,14 @@ async def organization_by_user_data(
             array_agg(
                 func.json_build_object("value", tag_tbl.c.id, "label", tag_tbl.c.label)
             ).label("tags"),
+            country_tbl.c.label,
+            city_tbl.c.label,
         )
-        .select_from(
-            organization_members_tbl.join(org_tbl, organization_members_tbl.c.organization_id == org_tbl.c.id)
-            .join(
-                org_tag_tbl, org_tbl.c.id == org_tag_tbl.c.organization_id, isouter=True
-            ).join(tag_tbl, org_tag_tbl.c.tag_id == tag_tbl.c.id, isouter=True)
+        .select_from(join_stmt)
+        .group_by(
+            org_tbl.c.idountry_tbl.c.label,
+            city_tbl.c.label,
         )
-        .group_by(org_tbl.c.id)
         .where(organization_members_tbl.c.user_id == user_id)
     )
 

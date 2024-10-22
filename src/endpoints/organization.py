@@ -9,7 +9,7 @@ from src.exceptions import BadRequestException
 from src import schemas
 from src.schemas import responses
 
-from src.services import organization, document
+from src.services import organization, document, event
 
 router = APIRouter(
     prefix="/org", dependencies=[Depends(get_current_user)], tags=["Organizations"]
@@ -72,3 +72,12 @@ async def add_employee(
 
     new_data = await organization.add_employee(db_session, data)
     return responses.MembershipReponse(data=new_data)
+
+@router.get("/event", response_model=responses.EventAttributeResponse)
+async def get_event(
+    current_user: UserDependency,
+    db_session: DatabaseDependency,
+) -> responses.EventListResponse:
+    
+    upcoming_event = await event.event_by_org_id(db_session, current_user.organization_id)
+    return responses.EventAttributeResponse(data=upcoming_event)
