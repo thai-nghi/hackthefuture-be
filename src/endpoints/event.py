@@ -4,6 +4,7 @@ from fastapi import APIRouter, Body, Path, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.dependencies import UserDependency, DatabaseDependency
+from src.dependencies.user import get_current_user
 
 from src.exceptions import BadRequestException
 from src import schemas
@@ -12,13 +13,13 @@ from src.schemas import responses
 
 import datetime
 from src.services import event, organization, application
+from fastapi import Depends
 
-router = APIRouter(prefix="/event", tags=["Events"])
+router = APIRouter(prefix="/event", tags=["Events"], dependencies=[Depends(get_current_user)])
 
 
 @router.get("/", response_model=responses.EventListResponse)
 async def get_event(
-    current_user: UserDependency,
     db_session: DatabaseDependency,
     currentPage: Annotated[int, Query(gt=0)] = 0,
     pageSize: Annotated[int, Query(lt=100)] = 6,
@@ -58,7 +59,6 @@ async def create_event(
 
 @router.get("/{event_id}", response_model=responses.EventAttributeResponse)
 async def get_event(
-    current_user: UserDependency,
     db_session: DatabaseDependency,
     event_id: Annotated[int, Path],
 ) -> responses.EventAttributeResponse:
@@ -86,21 +86,20 @@ async def get_event(
 
 @router.get("/{event_id}/application", response_model=responses.EventApplicationListResponse)
 async def get_event_application(
-    current_user: UserDependency,
     db_session: DatabaseDependency,
-    event_id: Annotated[int, Path]
+    event_id: Annotated[int, Path()]
 ) -> responses.EventApplicationListResponse:
     applied = await application.get_application_by_event_id(db_session, event_id)
     return responses.EventApplicationListResponse(data=applied)
 
-@router.post("/{event_id}/application", response_model=responses.EventApplicationResponse)
-async def get_event_application(
+@router.post("/{event_id}/apply", response_model=responses.EventApplicationResponse)
+async def apply_for_event(
     current_user: UserDependency,
     db_session: DatabaseDependency,
-    event_id: Annotated[int, Path],
-    event_data: schemas.EventApplicationIn
+    event_id: Annotated[int, Path()],
+    data: Annotated[schemas.EventApplicationIn, Body(embed=True)]
 ) -> responses.EventApplicationResponse:
-    inserted_application = await application.add_new_application(db_session, event_id, current_user.organization_id, event_data)
+    inserted_application = await application.add_new_application(db_session, event_id, current_user.organization_id, data)
     await db_session.commit()
 
     return responses.EventApplicationResponse(data=inserted_application)
@@ -110,12 +109,15 @@ async def get_event_application(
 async def set_status(
     current_user: UserDependency,
     db_session: DatabaseDependency,
-    event_id: Annotated[int, Path],
-    application_id: Annotated[int, Path],
-    status: schemas.ApplicationStatusIn
+    event_id: Annotated[int, Path()],
+    application_id: Annotated[int, Path()],
+    data: Annotated[schemas.ApplicationStatusIn, Body(embed=True)]
 ) -> responses.EventApplicationResponse:
     event_organizer_id = await event.get_organizer_by_id(db_session, event_id)
     if event_organizer_id != current_user.organization_id:
         raise BadRequestException(detail='Only organizer can change the status of the application')
-    updated = await application.update_status(db_session, event_id, application_id, status)
+    updated = await application.update_status(db_session, event_id, application_id, data.status)
+    
+    await db_session.commit()
+    
     return responses.EventApplicationResponse(data = updated)

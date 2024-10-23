@@ -241,8 +241,7 @@ class PaginationEventList(BaseModel):
     data: list[EventAttribute] = []
 
 class EventApplicationIn(BaseModel):
-    applicant_id: int
-    application_data: str
+    application_data: dict[str, Any]
     
 
 class EventApplicationMid(EventApplicationIn):
@@ -254,6 +253,17 @@ class EventApplicationMid(EventApplicationIn):
 
 class EventApplication(EventApplicationMid):
     id: int
+    applicant_name: str
+    applicant_address: str
+    applicant_phone: str
+    applicant_email: str
+    applicant_size: OrganizationSize
+    applicant_years_of_operation: int
+    applicant_country: int
+    applicant_city: int
+    applicant_country_label: str
+    applicant_city_label: str
+    event_name: str
 
 class ApplicationStatusIn(BaseModel):
     status: ApplicationStatus

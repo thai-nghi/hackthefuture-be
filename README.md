@@ -44,6 +44,32 @@ To start it run
 docker compose --env-file .dev.env -f ./deploy/dev-compose.yml up minio -d
 ```
 
+Create a bucket `htf-public` and set policy as follows
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+    {
+      "Action": [
+        "s3:GetObject"
+      ],
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": [
+          "*"
+        ]
+      },
+      "Resource": [
+        "arn:aws:s3:::htf-public/*"
+      ],
+      "Sid": ""
+    }
+  ]        
+}
+
+```
+
 # Starting server for development
 ```bash
 uvicorn main:app --host <host_ip> --port 8000 --reload
@@ -81,7 +107,5 @@ END $$;
 ```bash
 psql -U htf -h 127.0.0.1 -p 5432 -d htf -f sql_scripts/countries.sql
 psql -U htf -h 127.0.0.1 -p 5432 -d htf -f sql_scripts/tags.sql
-python -m src.support_script.remake_org_user_data
+python -m src.support_script.insert_data
 psql -U htf -h 127.0.0.1 -p 5432 -d htf -f sql_scripts/user_and_org.sql
-python -m src.support_script.insert_events
-

@@ -9,6 +9,8 @@ from src.exceptions import BadRequestException
 from src import schemas
 from src.schemas import responses
 
+
+from src.exceptions import NotFoundException
 from src.services import organization, document, event, application
 
 router = APIRouter(
@@ -79,6 +81,10 @@ async def get_event(
     db_session: DatabaseDependency,
 ) -> responses.EventListResponse:
     
+    if current_user.organization_id is None:
+        raise NotFoundException(detail="No event this user owns")
+
+
     upcoming_event = await event.event_by_org_id(db_session, current_user.organization_id)
     return responses.EventAttributeResponse(data=upcoming_event)
 
