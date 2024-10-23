@@ -25,5 +25,9 @@ class EventListResponse(BaseResponse):
 
 class EventAttributeResponse(BaseResponse):
     data: schemas.EventAttribute
-    
 
+class EventApplicationResponse(BaseResponse):
+    data: schemas.EventApplication
+
+class EventApplicationListResponse(BaseResponse):
+    data: list[schemas.EventApplication]
